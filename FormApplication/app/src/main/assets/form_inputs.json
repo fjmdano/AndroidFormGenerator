@@ -1,0 +1,23 @@
+{
+	"edittextbox": [{
+		"hint": "MERALCO Reference Number",
+		"type": "alphanumeric",
+		"max_characters": "26"
+		}, {
+		"hint": "Amount",
+		"type": "number",
+		"note": "Biller Convenience Fee (BCF) may apply."
+		}, {
+		"hint": "Due Date",
+		"type": "date"
+		}, [
+			{
+				"hint": "city",
+				"type": "alphanumeric"
+			}, {
+				"hint": "postal code",
+				"type": "number"
+			}
+		]
+	]
+}
