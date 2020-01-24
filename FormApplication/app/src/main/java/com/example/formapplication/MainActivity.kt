@@ -4,6 +4,8 @@ import android.annotation.TargetApi
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
@@ -17,9 +19,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
         openJsonFile()
+        setContentView(R.layout.activity_main)
     }
 
     fun openJsonFile() {
@@ -45,5 +46,10 @@ class MainActivity : AppCompatActivity() {
             print(textInput["hint"] as String)
         }
         */
+    }
+
+    fun onClickSubmitButton(view: View) {
+        Toast.makeText(this, "Submit!", Toast.LENGTH_SHORT).show()
+        adapter.getValues()
     }
 }
