@@ -1,23 +1,36 @@
 {
 	"edittextbox": [{
+		"type": "edit",
 		"hint": "MERALCO Reference Number",
-		"type": "alphanumeric",
+		"inputType": "alphanumeric",
 		"max_characters": "26"
 		}, {
+		"type": "edit",
 		"hint": "Amount",
-		"type": "number",
+		"inputType": "number",
 		"note": "Biller Convenience Fee (BCF) may apply."
 		}, {
+		"type": "edit",
 		"hint": "Due Date",
-		"type": "date"
+		"inputType": "date"
+		}, {
+		"type": "dropdown",
+		"hint": "Gender",
+		"choices": ["Female", "Male", "Others"]
 		}, [
 			{
+				"type": "edit",
 				"hint": "city",
-				"type": "alphanumeric"
+				"inputType": "alphanumeric"
 			}, {
+				"type": "edit",
 				"hint": "postal code",
-				"type": "number"
+				"inputType": "number"
 			}
-		]
+		], {
+		"type": "checkbox",
+		"hint": "Source of Income",
+		"choices": ["Salary", "Investments", "Option 3", "Option 4", "Others"]
+		}
 	]
 }
