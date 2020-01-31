@@ -19,8 +19,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        openJsonFile()
         setContentView(R.layout.activity_main)
+        openJsonFile()
     }
 
     fun openJsonFile() {
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recycler_view)
         recyclerView.layoutManager = linearLayoutManager
-        adapter = RecyclerAdapter(inputJsonArray)
+        adapter = RecyclerAdapter(inputJsonArray, R.layout.layout_form_input)
         recyclerView.adapter = adapter
 
         /*

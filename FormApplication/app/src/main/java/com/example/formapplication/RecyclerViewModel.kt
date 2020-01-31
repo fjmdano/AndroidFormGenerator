@@ -15,36 +15,79 @@ class RecyclerViewModel() {
 
     companion object {
         private val TAG = "Model"
-        var instance = RecyclerViewModel()
+        val TYPE_EDIT = "edit"
+        val TYPE_DROPDOWN = "dropdown"
+        val TYPE_CHECKBOX = "checkbox"
+        val TYPE_AGREEMENT = "agreement"
     }
 
-    fun generateId(id: String): Int {
+    fun updateValueInMap(id: String, value: Any, type: String) {
+        // Check the type is same
+        when (type) {
+            TYPE_EDIT, TYPE_DROPDOWN -> {
+                if ((valueMap[id] !is String) || (value !is String)) {
+                    Log.i(TAG, "[CHECKID][updateValueInMap] Not correct format")
+                    return
+                }
+                valueMap[id] = value
+            }
+            TYPE_CHECKBOX -> {
+                if ((valueMap[id] !is MutableList<*>) || (value !is String)) {
+                    Log.i(TAG, "[CHECKID][updateValueInMap] Not correct format")
+                    return
+                }
+                // If value in map, add. Else, delete
+                if (value in (valueMap[id] as MutableList<*>)) {
+                    (valueMap[id] as MutableList<*>).remove(value)
+                } else {
+                    (valueMap[id] as MutableList<String>).add(value)
+                }
+            }
+            TYPE_AGREEMENT -> {
+                if ((valueMap[id] !is Boolean) || (value !is Boolean)) {
+                    Log.i(TAG, "[CHECKID][updateValueInMap] Not correct format")
+                    return
+                }
+                valueMap[id] = value
+            }
+        }
+    }
+
+    fun generateId(id: String, type: String, checkBoxNumber: Int = 0): Int {
         val idNum = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             View.generateViewId()
         } else {
             ViewCompat.generateViewId()
         }
         // Map the id and idNum in keyMap
-        keyMap.put(id, idNum)
+        if (type == TYPE_CHECKBOX) {
+            //Add number to the id for better identification
+            keyMap.put(id + checkBoxNumber, idNum)
+
+        } else {
+            keyMap.put(id, idNum)
+        }
+        when (type) {
+            TYPE_EDIT -> valueMap.put(id, "")
+            TYPE_CHECKBOX -> {
+                if (id !in valueMap) {
+                    valueMap.put(id, mutableListOf<String>())
+                }
+            }
+            TYPE_DROPDOWN -> valueMap.put(id, "")
+            TYPE_AGREEMENT -> valueMap.put(id, false)
+        }
         return idNum
     }
 
 
-    fun getValues(view: View) {
-        Log.i(TAG, "[CHECKID][START][GET VALUES!!!]: " + keyMap.size)
-        for ((key, value) in keyMap) {
-            // Get View
-            val v = view.findViewById<View>(value)
-            if (v is EditText) {
-                Log.i(TAG, "[CHECKID][" + key + "]: id: " + v.text)
-            } else if (v is Spinner) {
-                Log.i(TAG, "[CHECKID][" + key + "]: id: " + v.selectedItem)
-            } else if (v is CheckBox) {
-                Log.i(TAG, "[CHECKID][" + key + "]: id: " + v.isChecked)
-            } else {
-                Log.i(TAG, "[CHECKID][not sure of type ;( ")
-            }
+    fun getValues(): MutableMap<String, Any> {
+        Log.i(TAG, "[CHECKID][START][GET VALUES!!!]: " + valueMap.size)
+        for ((key, value) in valueMap) {
+            Log.i(TAG, "[CHECKID][" + key + "]: value: " + value.toString())
         }
         Log.i(TAG, "[CHECKID][END][GET VALUES!!!]")
+
+        return valueMap
     }
 }
