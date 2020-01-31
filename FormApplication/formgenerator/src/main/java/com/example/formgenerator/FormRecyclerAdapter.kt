@@ -1,4 +1,4 @@
-package com.example.formapplication
+package com.example.formgenerator
 
 import android.text.Editable
 import android.text.InputType
@@ -6,7 +6,6 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
 import org.json.JSONObject
 import android.widget.ArrayAdapter
@@ -14,6 +13,7 @@ import androidx.core.widget.TextViewCompat
 import android.app.DatePickerDialog
 import java.util.*
 import android.widget.LinearLayout
+import androidx.recyclerview.widget.RecyclerView
 
 class FormRecyclerAdapter(private val inputJsonArray: JSONArray) : RecyclerView.Adapter<FormRecyclerAdapter.FormItemHolder>() {
 
