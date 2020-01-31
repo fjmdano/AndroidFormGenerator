@@ -1,46 +1,54 @@
 package com.example.formapplication
 
-import android.os.Build
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.layout_form_input.view.*
 import org.json.JSONArray
 import org.json.JSONObject
 import android.widget.ArrayAdapter
 import androidx.core.widget.TextViewCompat
+import android.app.DatePickerDialog
+import java.util.*
+import android.widget.LinearLayout
 
-class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout: Int) : RecyclerView.Adapter<RecyclerAdapter.FormItemHolder>() {
+class FormRecyclerAdapter(private val inputJsonArray: JSONArray) : RecyclerView.Adapter<FormRecyclerAdapter.FormItemHolder>() {
 
-    var model: RecyclerViewModel = RecyclerViewModel()
+    var formModel: FormRecyclerModel = FormRecyclerModel()
+    lateinit var linearLayout: LinearLayout
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerAdapter.FormItemHolder {
-        val inflatedView = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false)
-        return FormItemHolder(inflatedView)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FormRecyclerAdapter.FormItemHolder {
+
+        linearLayout = LinearLayout(parent.context)
+        val layoutParams = RecyclerView.LayoutParams(
+            RecyclerView.LayoutParams.MATCH_PARENT,
+            RecyclerView.LayoutParams.WRAP_CONTENT
+        )
+        linearLayout.layoutParams = layoutParams
+        linearLayout.orientation = LinearLayout.VERTICAL
+
+        return FormItemHolder(linearLayout)
     }
 
     override fun getItemCount(): Int = inputJsonArray.length()
 
-    override fun onBindViewHolder(holder: RecyclerAdapter.FormItemHolder, position: Int) {
+    override fun onBindViewHolder(holder: FormRecyclerAdapter.FormItemHolder, position: Int) {
         if (inputJsonArray.get(position) is JSONObject) {
             // Element is a JSONObject
             val formItem = inputJsonArray.getJSONObject(position)
-            holder.bindFormItem(formItem, model)
+            holder.bindFormItem(formItem, formModel, linearLayout)
         } else {
             // Element is a JSONArray
             val formItem = inputJsonArray.getJSONArray(position)
-            holder.bindFormItem(formItem, model)
+            holder.bindFormItem(formItem, formModel, linearLayout)
         }
     }
 
     fun getValues(): MutableMap<String, Any> {
-        return model.getValues()
+        return formModel.getValues()
     }
 
     class FormItemHolder(private val view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
@@ -51,12 +59,12 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
             view.setOnClickListener(this)
         }
 
-        fun bindFormItem(formItem: JSONArray, model: RecyclerViewModel) {
+        fun bindFormItem(formItem: JSONArray, formModel: FormRecyclerModel, linearLayout: LinearLayout) {
             // All items in the array will be displayed in a single row
             // TODO: Weight can be specified
             this.formItemArray = formItem
 
-            view.ll_item_row.orientation = LinearLayout.HORIZONTAL
+            linearLayout.orientation = LinearLayout.HORIZONTAL
             for (i in 0 until formItem.length()) {
                 val subLayout = LinearLayout(view.context)
                 val linearLayoutParam = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -65,27 +73,27 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
                 subLayout.layoutParams = linearLayoutParam
 
                 val subItem = formItem.getJSONObject(i)
-                bindFormItem(subItem, model, subLayout)
-                view.ll_item_row.addView(subLayout)
+                bindFormItem(subItem, formModel, subLayout)
+                linearLayout.addView(subLayout)
             }
 
         }
 
-        fun bindFormItem(formItem: JSONObject, model: RecyclerViewModel, linearLayout: LinearLayout = view.ll_item_row) {
+        fun bindFormItem(formItem: JSONObject, formModel: FormRecyclerModel, linearLayout: LinearLayout) {
             this.formItemObject = formItem
             if (!formItem.has(LABEL_TYPE)) {
                 return
             }
             when (formItem[LABEL_TYPE] as String) {
-                TYPE_EDIT -> bindEditTextItem(formItem, model, linearLayout)
-                TYPE_DROPDOWN -> bindSpinnerItem(formItem, model, linearLayout)
-                TYPE_CHECKBOX -> bindCheckBoxItem(formItem, model, linearLayout)
-                TYPE_AGREEMENT -> bindAgreementItem(formItem, model, linearLayout)
+                TYPE_EDIT -> bindEditTextItem(formItem, formModel, linearLayout)
+                TYPE_DROPDOWN -> bindSpinnerItem(formItem, formModel, linearLayout)
+                TYPE_CHECKBOX -> bindCheckBoxItem(formItem, formModel, linearLayout)
+                TYPE_AGREEMENT -> bindAgreementItem(formItem, formModel, linearLayout)
             }
         }
 
-        private fun bindEditTextItem(editTextItem: JSONObject, model: RecyclerViewModel,
-                                     linearLayout: LinearLayout = view.ll_item_row) {
+        private fun bindEditTextItem(editTextItem: JSONObject, formModel: FormRecyclerModel,
+                                     linearLayout: LinearLayout) {
             //add EditText
             val editText = EditText(view.context)
             val linearLayoutParam = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -98,13 +106,28 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
             if (editTextItem.has(LABEL_INPUTTYPE)) {
                 when (editTextItem[LABEL_INPUTTYPE]) {
                     "number" -> editText.inputType = InputType.TYPE_CLASS_NUMBER
-                    "date" -> editText.inputType = InputType.TYPE_CLASS_DATETIME
+                    "date" ->{
+                        editText.inputType = InputType.TYPE_CLASS_DATETIME
+                        val calendar = Calendar.getInstance()
+                        val datePickerDialog = DatePickerDialog(view.context,
+                            DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+                                val dateString = (monthOfYear + 1).toString() +  " / " + dayOfMonth + " / " + year
+                                editText.setText(dateString)
+                            },
+                            calendar.get(Calendar.YEAR),
+                            calendar.get(Calendar.MONTH),
+                            calendar.get(Calendar.DAY_OF_MONTH))
+
+                        editText.setOnClickListener {
+                            datePickerDialog.show()
+                        }
+                    }
                     else -> editText.inputType = InputType.TYPE_CLASS_TEXT
                 }
             }
             // Set ID for editText
             if (editTextItem.has(LABEL_ID)) {
-                editText.id = model.generateId(editTextItem[LABEL_ID] as String, TYPE_EDIT)
+                editText.id = formModel.generateId(editTextItem[LABEL_ID] as String, TYPE_EDIT)
                 editText.addTextChangedListener(object: TextWatcher{
                     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     }
@@ -113,7 +136,7 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
                     }
 
                     override fun afterTextChanged(s: Editable) {
-                        model.updateValueInMap(editTextItem[LABEL_ID] as String, s.toString(), TYPE_EDIT)
+                        formModel.updateValueInMap(editTextItem[LABEL_ID] as String, s.toString(), TYPE_EDIT)
                     }
                 })
             }
@@ -132,8 +155,8 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
             }
         }
 
-        private fun bindSpinnerItem(spinnerItem: JSONObject, model: RecyclerViewModel,
-                                    linearLayout: LinearLayout = view.ll_item_row) {
+        private fun bindSpinnerItem(spinnerItem: JSONObject, formModel: FormRecyclerModel,
+                                    linearLayout: LinearLayout) {
             val paramChild = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5F)
             val paramParent = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1F)
 
@@ -166,20 +189,19 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
 
                 // Set ID for editText
                 if (spinnerItem.has(LABEL_ID)) {
-                    spinner.id = model.generateId(spinnerItem[LABEL_ID] as String, TYPE_DROPDOWN)
+                    spinner.id = formModel.generateId(spinnerItem[LABEL_ID] as String, TYPE_DROPDOWN)
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                         override fun onNothingSelected(parent: AdapterView<*>?) {
                         }
 
                         override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                             val selected = parent.getItemAtPosition(position).toString()
-                            model.updateValueInMap(spinnerItem[LABEL_ID] as String, selected, TYPE_DROPDOWN)
+                            formModel.updateValueInMap(spinnerItem[LABEL_ID] as String, selected, TYPE_DROPDOWN)
                         }
 
                     }
                 }
                 spinner.layoutParams = paramChild
-                Log.i(TAG,"[CHECKID][spinner]: id: " + spinner.id)
                 subLayout.addView(spinner)
 
             }
@@ -187,8 +209,8 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
             linearLayout.addView(subLayout)
         }
 
-        private fun bindCheckBoxItem(checkBoxItem: JSONObject, model: RecyclerViewModel,
-                                     linearLayout: LinearLayout = view.ll_item_row) {
+        private fun bindCheckBoxItem(checkBoxItem: JSONObject, formModel: FormRecyclerModel,
+                                     linearLayout: LinearLayout) {
             val linearLayoutParam = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
 
             // Create sublayout
@@ -214,10 +236,10 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
                     checkBox.layoutParams = linearLayoutParam
                     if (checkBoxItem.has(LABEL_ID)) {
                         // Generate an ID for each checkbox
-                        checkBox.id = model.generateId(checkBoxItem[LABEL_ID] as String, TYPE_CHECKBOX, i)
+                        checkBox.id = formModel.generateId(checkBoxItem[LABEL_ID] as String, TYPE_CHECKBOX, i)
 
                         checkBox.setOnClickListener{ v ->
-                            model.updateValueInMap(checkBoxItem[LABEL_ID] as String, (v as CheckBox).text, TYPE_CHECKBOX)
+                            formModel.updateValueInMap(checkBoxItem[LABEL_ID] as String, (v as CheckBox).text, TYPE_CHECKBOX)
                         }
                     }
                     subLayout.addView(checkBox)
@@ -227,19 +249,19 @@ class RecyclerAdapter(private val inputJsonArray: JSONArray, private val layout:
             }
         }
 
-        private fun bindAgreementItem(agreementItem: JSONObject, model: RecyclerViewModel,
-                                      linearLayout: LinearLayout = view.ll_item_row) {
+        private fun bindAgreementItem(agreementItem: JSONObject, formModel: FormRecyclerModel,
+                                      linearLayout: LinearLayout) {
             val linearLayoutParam = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             if (agreementItem.has(LABEL_HINT)) {
                 val checkBox = CheckBox(view.context)
                 checkBox.text = agreementItem[LABEL_HINT] as String
                 if (agreementItem.has(LABEL_ID)) {
                     // Generate an ID for each checkbox, but don't save each in keyMap. Or at least diff way of saving. Hmm
-                    checkBox.id = model.generateId(agreementItem[LABEL_ID] as String, TYPE_AGREEMENT)
+                    checkBox.id = formModel.generateId(agreementItem[LABEL_ID] as String, TYPE_AGREEMENT)
 
                     // Create onClickListener for each checkbox, but when saving, add to List
                     checkBox.setOnClickListener{ v ->
-                        model.updateValueInMap(agreementItem[LABEL_ID] as String, (v as CheckBox).isChecked, TYPE_AGREEMENT)
+                        formModel.updateValueInMap(agreementItem[LABEL_ID] as String, (v as CheckBox).isChecked, TYPE_AGREEMENT)
                     }
                 }
                 checkBox.layoutParams = linearLayoutParam

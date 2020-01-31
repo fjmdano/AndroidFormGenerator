@@ -8,13 +8,13 @@ import android.widget.EditText
 import android.widget.Spinner
 import androidx.core.view.ViewCompat
 
-class RecyclerViewModel() {
+class FormRecyclerModel() {
 
-    private var keyMap: MutableMap<String, Int> = mutableMapOf()
+    private val keyMap: MutableMap<String, Int> = mutableMapOf()
     private val valueMap: MutableMap<String, Any> = mutableMapOf()
 
     companion object {
-        private val TAG = "Model"
+        private val TAG = "FormRecyclerModel"
         val TYPE_EDIT = "edit"
         val TYPE_DROPDOWN = "dropdown"
         val TYPE_CHECKBOX = "checkbox"
@@ -26,14 +26,14 @@ class RecyclerViewModel() {
         when (type) {
             TYPE_EDIT, TYPE_DROPDOWN -> {
                 if ((valueMap[id] !is String) || (value !is String)) {
-                    Log.i(TAG, "[CHECKID][updateValueInMap] Not correct format")
+                    Log.i(TAG, "[updateValueInMap] Not correct format")
                     return
                 }
                 valueMap[id] = value
             }
             TYPE_CHECKBOX -> {
                 if ((valueMap[id] !is MutableList<*>) || (value !is String)) {
-                    Log.i(TAG, "[CHECKID][updateValueInMap] Not correct format")
+                    Log.i(TAG, "[updateValueInMap] Not correct format")
                     return
                 }
                 // If value in map, add. Else, delete
@@ -45,7 +45,7 @@ class RecyclerViewModel() {
             }
             TYPE_AGREEMENT -> {
                 if ((valueMap[id] !is Boolean) || (value !is Boolean)) {
-                    Log.i(TAG, "[CHECKID][updateValueInMap] Not correct format")
+                    Log.i(TAG, "[updateValueInMap] Not correct format")
                     return
                 }
                 valueMap[id] = value
@@ -63,7 +63,6 @@ class RecyclerViewModel() {
         if (type == TYPE_CHECKBOX) {
             //Add number to the id for better identification
             keyMap.put(id + checkBoxNumber, idNum)
-
         } else {
             keyMap.put(id, idNum)
         }
@@ -82,11 +81,9 @@ class RecyclerViewModel() {
 
 
     fun getValues(): MutableMap<String, Any> {
-        Log.i(TAG, "[CHECKID][START][GET VALUES!!!]: " + valueMap.size)
         for ((key, value) in valueMap) {
-            Log.i(TAG, "[CHECKID][" + key + "]: value: " + value.toString())
+            Log.i(TAG, "[" + key + "]: value: " + value.toString())
         }
-        Log.i(TAG, "[CHECKID][END][GET VALUES!!!]")
 
         return valueMap
     }

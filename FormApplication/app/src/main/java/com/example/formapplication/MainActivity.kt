@@ -1,20 +1,17 @@
 package com.example.formapplication
 
-import android.annotation.TargetApi
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import org.json.JSONArray
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var adapter: RecyclerAdapter
+    private lateinit var adapter: FormRecyclerAdapter
     private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,17 +32,8 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recycler_view)
         recyclerView.layoutManager = linearLayoutManager
-        adapter = RecyclerAdapter(inputJsonArray, R.layout.layout_form_input)
+        adapter = FormRecyclerAdapter(inputJsonArray)
         recyclerView.adapter = adapter
-
-        /*
-        print(inputJsonArray)
-        print(inputJsonArray.length())
-        for (i in 0 until inputJsonArray.length()) {
-            var textInput = inputJsonArray.getJSONObject(i)
-            print(textInput["hint"] as String)
-        }
-        */
     }
 
     fun onClickSubmitButton(view: View) {
